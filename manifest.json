@@ -1,0 +1,15 @@
+{
+  "name": "Vibe Tasker",
+  "short_name": "Tasker",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#d01012",
+  "theme_color": "#d01012",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/d01012/f0ede5?text=B",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
