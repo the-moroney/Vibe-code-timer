@@ -7,19 +7,20 @@
     <title>Vibe Tasker</title>
     
 <style>
-#app-container {
+
+     #app-container {
   width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Pins timer top, buttons bottom */
+  justify-content: space-between; /* Forces UI elements to the top and bottom */
   padding: 10px;
   box-sizing: border-box;
-  overflow: hidden; /* No scrolling allowed */
+  overflow: hidden;
 }
 
 #timer {
-  font-size: 3.5rem; /* Slightly smaller to save space */
+  font-size: 3.2rem; /* Reduced to save vertical real estate */
   margin: 0;
   padding-top: 5px;
 }
@@ -28,32 +29,35 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Words stay in the center-ish */
-  gap: 2px; /* Tightens the vertical stack */
+  justify-content: center; /* Centers the words in the available middle space */
+  gap: 1px; /* Minimal gap between words */
 }
 
 .bass-word {
-  font-size: 2.2rem; /* Smaller words prevent push-down */
-  line-height: 0.9;
-  padding: 3px 8px;
+  font-size: 2.1rem; /* Smaller size ensures all 5 words fit on one screen */
+  line-height: 0.85;
+  padding: 2px 6px;
+  box-shadow: 3px 3px 0 var(--ink); /* Thinner shadow for smaller text */
 }
 
 .controls {
   width: 100%;
+  max-width: 400px;
   padding-bottom: 5px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 textarea {
-  height: 40px; /* Shortened to keep buttons visible */
+  height: 35px; /* Ultra-short to keep buttons in view */
 }
 
 button {
-  padding: 12px; /* Slimmer buttons for a tighter fit */
+  padding: 10px; /* Slimmer buttons */
+  font-size: 1.1rem;
 }
-        
+   
 
  </style>
 
