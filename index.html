@@ -1,67 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
     <title>Vibe Tasker</title>
-    
-<style>
-
-     #app-container {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* Forces UI elements to the top and bottom */
-  padding: 10px;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-#timer {
-  font-size: 3.2rem; /* Reduced to save vertical real estate */
-  margin: 0;
-  padding-top: 5px;
-}
-
-#taskNameWrapper {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Centers the words in the available middle space */
-  gap: 1px; /* Minimal gap between words */
-}
-
-.bass-word {
-  font-size: 2.1rem; /* Smaller size ensures all 5 words fit on one screen */
-  line-height: 0.85;
-  padding: 2px 6px;
-  box-shadow: 3px 3px 0 var(--ink); /* Thinner shadow for smaller text */
-}
-
-.controls {
-  width: 100%;
-  max-width: 400px;
-  padding-bottom: 5px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-textarea {
-  height: 35px; /* Ultra-short to keep buttons in view */
-}
-
-button {
-  padding: 10px; /* Slimmer buttons */
-  font-size: 1.1rem;
-}
-   
-
- </style>
-
+    <style>
+        :root { --bg: #d01012; --ink: #111; --paper: #f0ede5; }
+        body { background-color: var(--bg); color: var(--paper); font-family: "Impact", "Arial Black", sans-serif; margin: 0; height: 100vh; display: flex; justify-content: center; overflow: hidden; text-transform: uppercase; }
+        #app-container { width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; box-sizing: border-box; }
+        #timer { font-size: 3.2rem; color: var(--ink); letter-spacing: -2px; font-weight: 900; margin: 0; padding-top: 5px; text-align: center; }
+        #taskNameWrapper { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; gap: 1px; }
+        .bass-word { font-size: 2.1rem; line-height: 0.85; display: block; width: fit-content; background: var(--paper); color: var(--ink); padding: 3px 8px; margin: 1px 0; box-shadow: 3px 3px 0 var(--ink); transform: rotate(var(--rot)); align-self: var(--align); max-width: 85vw; word-break: break-all; }
+        .controls { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 4px; padding-bottom: 5px; }
+        textarea { width: 100%; height: 35px; background: var(--ink); color: #00ff41; border: none; padding: 5px; box-sizing: border-box; font-family: monospace; }
+        button { width: 100%; padding: 10px; border: none; font-size: 1.1rem; font-weight: 900; cursor: pointer; }
+        .load-btn { background: var(--paper); color: var(--ink); clip-path: polygon(0% 10%, 100% 0%, 95% 100%, 5% 90%); }
+        .next-btn { background: var(--ink); color: var(--paper); display: none; clip-path: polygon(2% 0%, 98% 5%, 100% 100%, 0% 95%); }
+        .skip-btn { background: transparent; border: 2px solid var(--ink); color: var(--ink); display: none; font-size: 0.8rem; padding: 5px; }
+    </style>
 </head>
+
+
+    
 <body>
 <div id="app-container">
     <div id="timer">00:00</div>
