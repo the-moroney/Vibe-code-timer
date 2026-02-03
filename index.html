@@ -1,47 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
-    <title>Vibe Tasker</title>
+    <title>Vibe Tasker: Director's Cut</title>
     <style>
         :root { --bg: #d01012; --ink: #111; --paper: #f0ede5; }
-        body { background-color: var(--bg); color: var(--paper); font-family: "Impact", "Arial Black", sans-serif; margin: 0; height: 100vh; display: flex; justify-content: center; overflow: hidden; text-transform: uppercase; }
-        #app-container { width: 100%; height: 92vh; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; box-sizing: border-box;position: relative; }
-        #timer { font-size: 3.2rem; color: var(--ink); letter-spacing: -2px; font-weight: 900; margin: 0; padding-top: 5px; text-align: center; }
-        #taskNameWrapper { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; gap: 1px; max-height: 50%;}
-        .bass-word { font-size: 1.8rem; line-height: 0.85; display: block; width: fit-content; background: var(--paper); color: var(--ink); padding: 3px 8px; margin: 1px 0; box-shadow: 3px 3px 0 var(--ink); transform: rotate(var(--rot)); align-self: var(--align); max-width: 85vw; word-break: break-all; }
-        .controls { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 4px; padding-bottom: 5px; }
-        textarea { width: 100%; height: 35px; background: var(--ink); color: #00ff41; border: none; padding: 5px; box-sizing: border-box; font-family: monospace; }
-        button { width: 100%; padding: 10px; border: none; font-size: 1.1rem; font-weight: 900; cursor: pointer; }
-        .load-btn { background: var(--paper); color: var(--ink); clip-path: polygon(0% 10%, 100% 0%, 95% 100%, 5% 90%); }
-        .next-btn { background: var(--ink); color: var(--paper); display: none; clip-path: polygon(2% 0%, 98% 5%, 100% 100%, 0% 95%); }
-        .skip-btn { background: transparent; border: 2px solid var(--ink); color: var(--ink); display: none; font-size: 0.8rem; padding: 5px; }
+        body { margin: 0; background-color: var(--bg); transition: background-color 0.6s ease; overflow: hidden; text-transform: uppercase; font-family: "Impact", sans-serif; }
+        
+        /* Layout Geometry */
+        #app-container { height: 92vh; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; position: relative; }
+        
+        /* The Pulse: Visibility from a distance */
+        #timer { font-size: 5.5rem; color: var(--ink); text-align: center; margin: 0; z-index: 10; letter-spacing: -3px; line-height: 1; }
+        .timer-running { animation: pulse 1s infinite alternate; color: var(--paper); text-shadow: 4px 4px 0 var(--ink); }
+
+        /* The Stage: Bass-style staggered titles */
+        #taskNameWrapper { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; gap: 2px; padding: 20px 0; }
+        .bass-word { font-size: 2.2rem; line-height: 0.8; background: var(--paper); color: var(--ink); padding: 4px 10px; margin: 2px 0; box-shadow: 4px 4px 0 var(--ink); transform: rotate(var(--rot)); align-self: var(--align); max-width: 85vw; }
+
+        /* The Focal Point: The inescapable Action button */
+        #nextBtn { 
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 260px; height: 260px; background: var(--ink); color: var(--paper); border-radius: 50%;
+            font-size: 2.5rem; font-weight: 900; border: 10px solid var(--paper); z-index: 2000;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5); cursor: pointer;
+        }
+
+        /* Fixed Footer Dock */
+        .controls { background: var(--ink); padding: 15px; border-top: 5px solid var(--paper); display: flex; flex-direction: column; gap: 8px; z-index: 500; }
+        textarea { height: 40px; background: #222; color: #00ff41; border: 1px solid var(--paper); padding: 8px; font-family: monospace; }
+        .load-btn { background: var(--paper); color: var(--ink); font-weight: 900; padding: 12px; border: none; }
+        .skip-btn { display: none; background: transparent; color: var(--paper); border: 2px solid var(--paper); padding: 8px; font-size: 0.8rem; }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
     </style>
 </head>
-
-
-    
-<body>
+<body class="theme-red">
 <div id="app-container">
     <div id="timer">00:00</div>
     <div id="taskNameWrapper"></div>
+    <button id="nextBtn" onclick="startCurrentTask()">ACTION</button>
     <div class="controls">
         <div id="setupArea">
             <textarea id="jsonInput" placeholder="PASTE SCRIPT..."></textarea>
             <button class="load-btn" onclick="loadTasks()">LOAD TITLES</button>
         </div>
-        <button id="nextBtn" class="next-btn" onclick="startCurrentTask()">START ACTION</button>
         <button id="skipBtn" class="skip-btn" onclick="skipTask()">FINISH EARLY</button>
     </div>
 </div>
-<script src="app.js"></script>
+
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
+let tasks = [];
+let currentIndex = 0;
+let timeLeft = 0;
+let interval = null;
+let chimePlayed = false;
+const colors = ['#d01012', '#e65a1e', '#eebc1d', '#111'];
+
+function initOpeningScreen() {
+    const wrapper = document.getElementById('taskNameWrapper');
+    "DONE IS BETTER THAN PERFECT".split(' ').forEach(word => createBassWord(word, wrapper));
+}
+
+function createBassWord(text, container) {
+    const div = document.createElement('div');
+    div.className = 'bass-word';
+    div.innerText = text;
+    const aligns = ['flex-start', 'center', 'flex-end'];
+    div.style.setProperty('--align', aligns[Math.floor(Math.random() * 3)]);
+    div.style.setProperty('--rot', (Math.random() * 8 - 4) + 'deg');
+    container.appendChild(div);
+}
+
+function loadTasks() {
+    const val = document.getElementById('jsonInput').value;
+    try {
+        tasks = JSON.parse(val);
+        currentIndex = 0;
+        document.getElementById('setupArea').style.display = 'none';
+        prepareNext();
+    } catch (e) { alert("SCRIPT ERROR."); }
+}
+
+function prepareNext() {
+    chimePlayed = false;
+    const wrapper = document.getElementById('taskNameWrapper');
+    const timerDisp = document.getElementById('timer');
+    wrapper.innerHTML = '';
+    timerDisp.className = '';
+    document.body.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+    if (currentIndex >= tasks.length) {
+        ["DONE.", "WHAT", "DO YOU", "NEED TO", "DO NEXT", "KNOWING", "YOU WILL", "DIE ONE", "DAY?"].forEach(w => createBassWord(w, wrapper));
+        timerDisp.innerText = "00:00";
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('setupArea').style.display = 'block';
+        return;
     }
+
+    tasks[currentIndex].name.split(' ').forEach(word => createBassWord(word, wrapper));
+    timerDisp.innerText = "NEXT...";
+    document.getElementById('nextBtn').style.display = 'block';
+}
+
+function startCurrentTask() {
+    timeLeft = tasks[currentIndex].duration;
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('skipBtn').style.display = 'block';
+    document.getElementById('timer').classList.add('timer-running');
+    
+    if (interval) clearInterval(interval);
+    interval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft === 60 && !chimePlayed) { playChime(); chimePlayed = true; }
+        updateDisplay();
+        if (timeLeft <= 0) finishTask();
+    }, 1000);
+}
+
+function updateDisplay() {
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    document.getElementById('timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+function finishTask() { clearInterval(interval); currentIndex++; prepareNext(); }
+function skipTask() { finishTask(); }
+
+function playChime() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 1);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 1);
+}
+
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+initOpeningScreen();
 </script>
 </body>
 </html>
